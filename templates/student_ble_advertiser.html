@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Presence - {{ student_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        .status-message {
+            font-size: 1.125rem;
+            color: #4b5563;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .blinking-dot {
+            height: 20px;
+            width: 20px;
+            background-color: #4f46e5; /* indigo-600 */
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite ease-in-out;
+            margin-right: 0.5rem;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.7; }
+        }
+        .note {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 1rem;
+        }
+        .btn-home {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            border: none;
+            text-decoration: none;
+            margin-top: 1.5rem;
+        }
+        .btn-home:hover {
+            background-color: #2563eb; /* blue-600 */
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-4xl font-bold">Student Presence Active</h2>
+        <p class="text-gray-700">
+            Hello, <span class="font-semibold text-indigo-700">{{ student_name }} (Roll No: {{ student_roll_no }})</span>!
+        </p>
+        <p class="status-message">
+            <span class="blinking-dot"></span>
+            Your presence is being advertised. Please keep this page open.
+        </p>
+        <p class="note">
+            (This simulates a Bluetooth advertisement by sending continuous signals to the server.)
+        </p>
+        <a href="{{ url_for('home') }}" class="btn-home">Return to Home</a>
+    </div>
+
+    <script>
+        const studentId = {{ student_id }};
+        const heartbeatInterval = 10 * 1000; // Send heartbeat every 10 seconds
+
+        async function sendHeartbeat() {
+            try {
+                const response = await fetch('/api/student_heartbeat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ student_id: studentId }),
+                });
+                const data = await response.json();
+                console.log('Heartbeat response:', data.message);
+            } catch (error) {
+                console.error('Error sending heartbeat:', error);
+                // Optionally, display an error message to the user
+            }
+        }
+
+        // Send first heartbeat immediately
+        sendHeartbeat();
+        // Set up interval for continuous heartbeats
+        const intervalId = setInterval(sendHeartbeat, heartbeatInterval);
+
+        // Clear interval if user navigates away or closes the tab
+        window.addEventListener('beforeunload', () => {
+            clearInterval(intervalId);
+            console.log('Heartbeat interval cleared.');
+        });
+    </script>
+</body>
+</html>

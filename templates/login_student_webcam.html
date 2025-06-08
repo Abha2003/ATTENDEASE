@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARK ATTENDANCE</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+        }
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        video {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 0.5rem;
+            background-color: #000;
+            margin-bottom: 1.5rem;
+        }
+        canvas {
+            display: none;
+        }
+        .message {
+            margin-top: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            min-height: 2rem;
+        }
+        .message.error {
+            color: #dc2626;
+        }
+        .message.success {
+            color: #22c55e;
+        }
+        .countdown {
+            display: none; 
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-4xl font-bold">👤 MARK ATTENDANCE</h2>
+
+        <div class="relative w-full max-w-500px">
+            <video id="webcamFeed" autoplay playsinline></video>
+            <div id="countdown" class="countdown"></div>
+        </div>
+        
+        <p id="message" class="message"></p>
+        <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcamFeed');
+        const countdownElement = document.getElementById('countdown');
+        const canvas = document.getElementById('canvas');
+        const messageElement = document.getElementById('message');
+        const context = canvas.getContext('2d');
+        let stream;
+        const CAPTURE_DELAY_SECONDS = 5;
+        const SUCCESS_MESSAGE_DISPLAY_TIME = 1500;
+        let isProcessing = false;
+
+        async function startWebcam() {
+            if (stream && !isProcessing && video.srcObject) {
+                messageElement.textContent = 'WEBCAM ACTIVE. PREPARING FOR CAPTURE...';
+                messageElement.classList.remove('error', 'success');
+                setTimeout(() => {
+                    if (!isProcessing) {
+                        captureAndLogin();
+                    }
+                }, CAPTURE_DELAY_SECONDS * 1000);
+                return;
+            }
+
+            if (isProcessing) return;
+            isProcessing = false;
+
+            messageElement.textContent = 'INITIALIZING WEBCAM...';
+            messageElement.classList.remove('error', 'success');
+
+            try {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                messageElement.textContent = 'WEBCAM ACTIVE. PREPARING FOR CAPTURE...';
+                
+                setTimeout(() => {
+                    if (!isProcessing) {
+                        captureAndLogin(); 
+                    }
+                }, CAPTURE_DELAY_SECONDS * 1000);
+            } catch (err) {
+                console.error('ERROR ACCESSING WEBCAM:', err);
+                messageElement.textContent = 'ERROR: COULD NOT ACCESS WEBCAM. PLEASE ENSURE IT IS CONNECTED AND PERMISSIONS ARE GRANTED.';
+                messageElement.classList.add('error');
+                isProcessing = false;
+            }
+        }
+
+        async function captureAndLogin() {
+            if (!stream || video.srcObject === null) {
+                messageElement.textContent = 'WEBCAM NOT ACTIVE. CANNOT CAPTURE PHOTO.';
+                messageElement.classList.add('error');
+                isProcessing = false;
+                setTimeout(() => startWebcam(), 5000);
+                return;
+            }
+            if (isProcessing) return;
+            isProcessing = true;
+
+            messageElement.textContent = 'CAPTURING PHOTO...';
+            messageElement.classList.remove('error', 'success');
+
+
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+            messageElement.textContent = 'PHOTO CAPTURED. VERIFYING... PLEASE WAIT.';
+            messageElement.classList.remove('error', 'success');
+
+            try {
+                const response = await fetch(window.location.origin + '/login/student/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ images: [imageDataUrl] }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const studentName = result.message.replace('Attendance marked for ', '').replace('!', '').replace('Attendance already marked for ', '').replace('today.', '').toUpperCase();
+                    messageElement.textContent = `✅ MARKED ATTENDANCE - ${studentName}`; 
+                    messageElement.classList.add('success'); 
+                    
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                        video.srcObject = null;
+                        stream = null;
+                    }
+
+                    setTimeout(() => {
+                        if (result.redirect_url) {
+                            window.location.href = result.redirect_url;
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, SUCCESS_MESSAGE_DISPLAY_TIME);
+                } else {
+                    messageElement.textContent = `❌ ${result.message.toUpperCase()}`;
+                    messageElement.classList.add('error');
+                    console.error('LOGIN VERIFICATION FAILED:', result.message);
+                    
+                    isProcessing = false;
+
+                    setTimeout(() => startWebcam(), 5000); 
+                }
+            } catch (error) {
+                console.error('ERROR DURING LOGIN VERIFICATION:', error);
+                messageElement.textContent = 'AN ERROR OCCURRED DURING VERIFICATION. PLEASE TRY AGAIN.';
+                messageElement.classList.add('error');
+                
+                isProcessing = false;
+                setTimeout(() => startWebcam(), 5000); 
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        window.onload = startWebcam;
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Success</title>
+    <style>
+        .tick { font-size: 100px; color: green; text-align: center; margin-top: 100px; }
+        .msg { font-size: 24px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="tick">✅</div>
+    <div class="msg">{{ message }}</div>
+    <script>
+        setTimeout(() => {
+            window.location.href = "/";
+        }, 2000);
+    </script>
+</body>
+</html>

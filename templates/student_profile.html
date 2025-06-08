@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STUDENT PROFILE - {{ student.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1.5rem auto;
+            border: 3px solid #4f46e5; /* Indigo border */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .profile-details {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 1rem;
+            color: #374151;
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        textarea {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            text-decoration: none;
+            text-align: center;
+            border: none;
+            min-width: 100px; /* Ensure buttons don't get too small */
+        }
+        .btn-indigo {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .btn-indigo:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+        .btn-gray {
+            background-color: #6b7280;
+            color: white;
+        }
+        .btn-gray:hover {
+            background-color: #4b5563;
+            transform: translateY(-1px);
+        }
+        .btn-red {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-red:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+        .flash-messages {
+            margin-top: 1rem;
+            text-align: left;
+            width: 100%;
+        }
+        .flash-messages li {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .flash-messages .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        .flash-messages .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        .flash-messages .info {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            border: 1px solid #38bdf8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-4xl font-bold">STUDENT PROFILE</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <img src="{{ student_image_path }}" alt="STUDENT PHOTO" class="profile-image">
+        
+        {% if edit_mode %}
+            <h3 class="text-2xl font-bold mb-4">EDIT STUDENT DETAILS</h3>
+            <form method="POST" action="{{ url_for('edit_student', student_id=student.id) }}">
+                <input type="text" name="name" value="{{ student.name }}" placeholder="NAME" required
+                       class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" name="class_" value="{{ student.class }}" placeholder="CLASS" required
+                       class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" name="roll_no" value="{{ student.roll_no }}" placeholder="ROLL NO" required
+                       class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">
+                <input type="email" name="parent_email" value="{{ student.parent_email }}" placeholder="PARENT EMAIL (OPTIONAL)"
+                       class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">
+                <input type="tel" name="parent_phone" value="{{ student.parent_phone }}" placeholder="PARENT PHONE (OPTIONAL)"
+                       class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">
+                <textarea name="address" placeholder="ADDRESS (OPTIONAL)"
+                          class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">{{ student.address }}</textarea>
+                <input type="date" name="dob" value="{{ student.dob }}" placeholder="DATE OF BIRTH (YYYY-MM-DD)"
+                       class="focus:ring-indigo-500 focus:border-indigo-500" oninput="this.value = this.value.toUpperCase()">
+                <div class="button-group">
+                    <button type="submit" class="btn btn-indigo">SAVE CHANGES</button>
+                    <a href="{{ url_for('student_profile', student_id=student.id) }}" class="btn btn-gray">CANCEL</a>
+                </div>
+            </form>
+        {% else %}
+            <h3 class="text-2xl font-bold mb-4">DETAILS FOR {{ student.name }} (ROLL NO: {{ student.roll_no }})</h3>
+            <div class="profile-details">
+                <div class="detail-item">
+                    <span class="detail-label">NAME:</span> <span>{{ student.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">CLASS:</span> <span>{{ student.class }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ROLL NO:</span> <span>{{ student.roll_no }}</span>
+                </div>
+                {% if student.parent_email %}
+                <div class="detail-item">
+                    <span class="detail-label">PARENT EMAIL:</span> <span>{{ student.parent_email }}</span>
+                </div>
+                {% endif %}
+                {% if student.parent_phone %}
+                <div class="detail-item">
+                    <span class="detail-label">PARENT PHONE:</span> <span>{{ student.parent_phone }}</span>
+                </div>
+                {% endif %}
+                {% if student.address %}
+                <div class="detail-item">
+                    <span class="detail-label">ADDRESS:</span> <span>{{ student.address }}</span>
+                </div>
+                {% endif %}
+                {% if student.dob %}
+                <div class="detail-item">
+                    <span class="detail-label">DATE OF BIRTH:</span> <span>{{ student.dob }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="button-group">
+                <a href="{{ url_for('edit_student', student_id=student.id) }}" class="btn btn-indigo">EDIT PROFILE</a>
+                <form action="{{ url_for('delete_student', student_id=student.id) }}" method="POST" onsubmit="return confirm('ARE YOU SURE YOU WANT TO DELETE THIS STUDENT? THIS ACTION CANNOT BE UNDONE.');">
+                    <button type="submit" class="btn btn-red">DELETE STUDENT</button>
+                </form>
+                <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gray">BACK TO DASHBOARD</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

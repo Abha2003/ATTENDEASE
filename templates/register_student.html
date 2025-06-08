@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REGISTER STUDENT</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 2rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="file"],
+        textarea {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="file"] {
+            padding: 0.5rem;
+        }
+        button[type="submit"],
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+        }
+        button[type="submit"]:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+        .btn {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+        }
+        .btn:hover {
+            background-color: #16a34a;
+            transform: translateY(-1px);
+        }
+        .back-home-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            text-decoration: none;
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            text-align: center;
+            width: fit-content;
+            margin-top: 1.5rem;
+            align-self: center;
+        }
+        .back-home-button:hover {
+            background-color: #4f46e5;
+            transform: translateY(-1px);
+        }
+        p {
+            margin: 0.5rem 0;
+            color: #6b7280;
+        }
+        .flash-messages {
+            margin-top: 1rem;
+            text-align: left;
+            width: 100%;
+        }
+        .flash-messages li {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .flash-messages .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        .flash-messages .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-4xl font-bold">🎓 REGISTER STUDENT</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="NAME" required
+                   class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" name="class_" placeholder="CLASS" required
+                   class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" name="roll_no" placeholder="ROLL NUMBER" required
+                   class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()">
+            
+            <input type="email" name="parent_email" placeholder="PARENT EMAIL (OPTIONAL)"
+                   class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()">
+            <input type="tel" name="parent_phone" placeholder="PARENT PHONE (OPTIONAL)"
+                   class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()">
+            <textarea name="address" placeholder="ADDRESS (OPTIONAL)"
+                      class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()"></textarea>
+            <input type="date" name="dob" placeholder="DATE OF BIRTH (YYYY-MM-DD)"
+                   class="focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm" oninput="this.value = this.value.toUpperCase()">
+
+            <label for="image_file" class="block text-sm font-medium text-gray-700 text-left mb-1">UPLOAD STUDENT PHOTO:</label>
+            <input type="file" id="image_file" name="image_file" accept="image/*" capture="user"
+                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            
+            <p class="text-gray-600">OR</p>
+            
+            <input type="hidden" name="image_data" id="image_data">
+
+            <a href="/webcam" class="btn bg-green-500 hover:bg-green-600 rounded-md shadow-sm">📷 DETECT FACE USING WEBCAM</a>
+            
+            <button type="submit" class="rounded-md shadow-sm">REGISTER</button>
+        </form>
+    </div>
+    <a href="{{ url_for('home') }}" class="back-home-button">BACK TO HOME</a>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

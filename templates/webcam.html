@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBCAM CAPTURE</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        video {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 0.5rem;
+            background-color: #000;
+            margin-bottom: 1.5rem;
+        }
+        canvas {
+            display: none;
+        }
+        button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+        .message {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #4b5563;
+        }
+        .back-home-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            text-decoration: none;
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            text-align: center;
+            width: fit-content;
+            margin-top: 1.5rem;
+            align-self: center;
+        }
+        .back-home-button:hover {
+            background-color: #4f46e5;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-4xl font-bold">📷 CAPTURE YOUR PHOTO</h2>
+        <video id="webcamFeed" autoplay playsinline></video>
+        <button id="captureButton" class="bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">CAPTURE PHOTO</button>
+        <canvas id="canvas" width="640" height="480"></canvas>
+        <p id="message" class="message"></p>
+    </div>
+    <a href="{{ url_for('home') }}" class="back-home-button">BACK TO HOME</a>
+
+    <script>
+        const video = document.getElementById('webcamFeed');
+        const captureButton = document.getElementById('captureButton');
+        const canvas = document.getElementById('canvas');
+        const messageElement = document.getElementById('message');
+        const context = canvas.getContext('2d');
+        let stream;
+
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                messageElement.textContent = 'WEBCAM ACTIVE. POSITION YOUR FACE IN THE FRAME.';
+            } catch (err) {
+                console.error('ERROR ACCESSING WEBCAM:', err);
+                messageElement.textContent = 'ERROR: COULD NOT ACCESS WEBCAM. PLEASE ENSURE IT IS CONNECTED AND PERMISSIONS ARE GRANTED.';
+                captureButton.disabled = true;
+            }
+        }
+
+        captureButton.addEventListener('click', () => {
+            if (stream) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                if (window.opener) {
+                    window.opener.postMessage({ type: 'webcam_image_data', data: imageDataUrl }, window.location.origin);
+                    messageElement.textContent = 'PHOTO CAPTURED! RETURNING TO REGISTRATION PAGE...';
+                    setTimeout(() => {
+                        window.close();
+                    }, 1000);
+                } else {
+                    messageElement.textContent = 'PHOTO CAPTURED! YOU CAN COPY THE DATA OR SAVE IT.';
+                    console.log('IMAGE DATA URL:', imageDataUrl);
+                }
+            } else {
+                messageElement.textContent = 'WEBCAM NOT ACTIVE. PLEASE START THE WEBCAM FIRST.';
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        window.onload = startWebcam;
+    </script>
+</body>
+</html>
